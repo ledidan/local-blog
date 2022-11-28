@@ -1,4 +1,4 @@
-import { addPost, cancelEditPost } from 'pages/blog/Blog.reducer'
+import { addPost, cancelEditPost, finishEditPost } from 'pages/blog/Blog.reducer'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from 'store'
@@ -19,9 +19,13 @@ const CreatePost = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const formDataId = { ...formData, id: new Date().toISOString() }
+    if (editPost) {
+      dispatch(finishEditPost(formData))
+    } else {
+      const formDataId = { ...formData }
+      dispatch(addPost(formDataId))
+    }
     setFormData(initialState)
-    dispatch(addPost(formDataId))
   }
   const handleCancelEdit = () => {
     dispatch(cancelEditPost())
