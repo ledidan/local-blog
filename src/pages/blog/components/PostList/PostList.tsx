@@ -1,4 +1,4 @@
-import { deletePost, startEditPost } from 'pages/blog/Blog.reducer'
+import { deletePost, startEditPost } from 'pages/blog/Blog.slice'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from 'store'
 import PostItems from '../PostItem'
