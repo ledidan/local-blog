@@ -1,7 +1,7 @@
-import { addPost, cancelEditPost, finishEditPost } from 'pages/blog/Blog.slice'
+import { addPost, cancelEditPost, updatePost } from 'pages/blog/Blog.slice'
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { useSelector } from 'react-redux'
+import { RootState, useAppDispatch } from 'store'
 import { Post } from 'types/blog.type'
 
 const initialState: Post = {
@@ -15,24 +15,28 @@ const initialState: Post = {
 const CreatePost = () => {
   const [formData, setFormData] = useState<Post>(initialState)
   const editPost = useSelector((state: RootState) => state.blog.editPost)
-  const dispatch = useDispatch()
-
+  const dispatch = useAppDispatch()
+  const loading = useSelector((state: RootState) => state.blog.loading)
+  useEffect(() => {
+    setFormData(editPost || initialState)
+  }, [editPost])
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (editPost) {
-      dispatch(finishEditPost(formData))
+      dispatch(
+        updatePost({
+          postId: editPost.id,
+          body: formData
+        })
+      )
     } else {
-      const formDataId = { ...formData }
-      dispatch(addPost(formDataId))
+      dispatch(addPost(formData))
     }
     setFormData(initialState)
   }
   const handleCancelEdit = () => {
     dispatch(cancelEditPost())
   }
-  useEffect(() => {
-    setFormData(editPost || initialState)
-  }, [editPost])
 
   return (
     <form onSubmit={handleSubmit} onReset={handleCancelEdit}>
