@@ -29,18 +29,32 @@ export const getPostList = createAsyncThunk('blog/getPostList', async (_, thunkA
   return response.data
 })
 export const addPost = createAsyncThunk('blog/addPostList', async (body: Omit<Post, 'id'>, thunkAPI) => {
-  const response = await http.post<Post>('posts', body, {
-    signal: thunkAPI.signal
-  })
-  return response.data
+  try {
+    const response = await http.post<Post>('posts', body, {
+      signal: thunkAPI.signal
+    })
+    return response.data
+  } catch (err: any) {
+    if (err.name === 'AxiosError' && err.response.status === 422) {
+      return thunkAPI.rejectWithValue(err.response.data)
+    }
+    throw err
+  }
 })
 export const updatePost = createAsyncThunk(
   'blog/updatePost',
   async ({ postId, body }: { postId: string; body: Post }, thunkAPI) => {
-    const response = await http.put<Post>(`posts/${postId}`, body, {
-      signal: thunkAPI.signal
-    })
-    return response.data
+    try {
+      const response = await http.put<Post>(`posts/${postId}`, body, {
+        signal: thunkAPI.signal
+      })
+      return response.data
+    } catch (err: any) {
+      if (err.name === 'AxiosError' && err.response.status === 422) {
+        return thunkAPI.rejectWithValue(err.response.data)
+      }
+      throw err
+    }
   }
 )
 
@@ -97,7 +111,7 @@ const blogSlice = createSlice({
         }
       )
       .addMatcher<RejectedAction | FulfilledAction>(
-        (action) => action.type.endsWith('/rejected' && '/fulfilled'),
+        (action) => action.type.endsWith('/rejected') || action.type.endsWith('/fulfilled'),
         (state, action) => {
           if (state.loading && state.currentRequestId === action.meta.requestId) {
             state.loading = false
@@ -106,7 +120,7 @@ const blogSlice = createSlice({
         }
       )
       .addDefaultCase((state, action) => {
-        console.log(`action type: ${action.type}`, current(state))
+        // console.log(`action type: ${action.type}`, current(state))
       })
   }
 })

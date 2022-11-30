@@ -12,15 +12,20 @@ const initialState: Post = {
   featuredImage: '',
   published: false
 }
+
+interface ErrorForm {
+  publishDate: string
+}
+
 const CreatePost = () => {
   const [formData, setFormData] = useState<Post>(initialState)
+  const [errorForm, setErrorForm] = useState<null | ErrorForm>(null)
   const editPost = useSelector((state: RootState) => state.blog.editPost)
   const dispatch = useAppDispatch()
-  const loading = useSelector((state: RootState) => state.blog.loading)
   useEffect(() => {
     setFormData(editPost || initialState)
   }, [editPost])
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (editPost) {
       dispatch(
@@ -29,10 +34,27 @@ const CreatePost = () => {
           body: formData
         })
       )
+        .unwrap()
+        .then(() => {
+          setFormData(initialState)
+          if (errorForm) {
+            setErrorForm(null)
+          }
+        })
+        .catch((error) => {
+          setErrorForm(error.error)
+        })
     } else {
-      dispatch(addPost(formData))
+      try {
+        await dispatch(addPost(formData)).unwrap()
+        setFormData(initialState)
+        if (errorForm) {
+          setErrorForm(null)
+        }
+      } catch (error: any) {
+        setErrorForm(error.error)
+      }
     }
-    setFormData(initialState)
   }
   const handleCancelEdit = () => {
     dispatch(cancelEditPost())
@@ -89,18 +111,33 @@ const CreatePost = () => {
         </div>
       </div>
       <div className='mb-6'>
-        <label htmlFor='publishDate' className='mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300'>
+        <label
+          htmlFor='publishDate'
+          className={`mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300 ${
+            errorForm?.publishDate ? 'text-red-700' : 'text-gray-300'
+          }`}
+        >
           Publish Date
         </label>
         <input
           type='datetime-local'
           id='publishDate'
-          className='block w-56 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
+          className={`block w-56 rounded-lg border focus:outline-none ${
+            errorForm?.publishDate
+              ? 'border-red-500 bg-red-100 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500'
+              : 'border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+          }`}
           placeholder='Title'
           value={formData.publishDate}
           onChange={(e) => setFormData((prev) => ({ ...prev, publishDate: e.target.value }))}
           required
         />
+        {errorForm?.publishDate && (
+          <p className='mt-2 text-sm text-red-500'>
+            <span className='font-medium'>Error !!</span>
+            {errorForm?.publishDate}
+          </p>
+        )}
       </div>
       <div className='mb-6 flex items-center'>
         <input
