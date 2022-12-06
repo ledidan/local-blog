@@ -1,5 +1,6 @@
+import { useAddPostsMutation } from 'pages/blog/Blog.service'
 import { addPost, cancelEditPost, updatePost } from 'pages/blog/Blog.slice'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState, useAppDispatch } from 'store'
 import { Post } from 'types/blog.type'
@@ -18,6 +19,7 @@ interface ErrorForm {
 
 const CreatePost = () => {
   const [formData, setFormData] = useState<Omit<Post, 'id'>>(initialState)
+  const [addPost, addPostResult] = useAddPostsMutation()
   // const [errorForm, setErrorForm] = useState<null | ErrorForm>(null)
   // const editPost = useSelector((state: RootState) => state.blog.editPost)
   // const dispatch = useAppDispatch()
@@ -58,14 +60,20 @@ const CreatePost = () => {
   // const handleCancelEdit = () => {
   //   dispatch(cancelEditPost())
   // }
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
+    await addPost(formData).unwrap()
+
+    setFormData(initialState)
+  }
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <div className='mb-6'>
         <label
           htmlFor='title'
           className='mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300'
-          onClick={() => dispatch({ type: 'blog/click' })}
+          // onClick={() => dispatch({ type: 'blog/click' })}
         >
           Title
         </label>
@@ -110,33 +118,29 @@ const CreatePost = () => {
         </div>
       </div>
       <div className='mb-6'>
-        <label
-          htmlFor='publishDate'
-          className={`mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300 ${
-            errorForm?.publishDate ? 'text-red-700' : 'text-gray-300'
-          }`}
-        >
+        <label htmlFor='publishDate' className={`mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300`}>
           Publish Date
         </label>
         <input
           type='datetime-local'
           id='publishDate'
-          className={`block w-56 rounded-lg border focus:outline-none ${
-            errorForm?.publishDate
-              ? 'border-red-500 bg-red-100 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          placeholder='Title'
+          className={`block w-56 rounded-lg border focus:outline-none `}
+          // ${
+          //   errorForm?.publishDate
+          //     ? 'border-red-500 bg-red-100 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500'
+          //     : 'border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+          // }`}
+          // placeholder='Title'
           value={formData.publishDate}
           onChange={(e) => setFormData((prev) => ({ ...prev, publishDate: e.target.value }))}
           required
         />
-        {errorForm?.publishDate && (
+        {/* {errorForm?.publishDate && (
           <p className='mt-2 text-sm text-red-500'>
             <span className='font-medium'>Error !!</span>
             {errorForm?.publishDate}
           </p>
-        )}
+        )} */}
       </div>
       <div className='mb-6 flex items-center'>
         <input
@@ -151,7 +155,15 @@ const CreatePost = () => {
         </label>
       </div>
       <div>
-        {!editPost && (
+        <button
+          className='group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 p-0.5 text-sm font-medium text-gray-900 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 group-hover:from-purple-600 group-hover:to-blue-500 dark:text-white dark:focus:ring-blue-800'
+          type='submit'
+        >
+          <span className='relative rounded-md bg-white px-5 py-2.5 transition-all duration-75 ease-in group-hover:bg-opacity-0 dark:bg-gray-900'>
+            Publish Post
+          </span>
+        </button>
+        {/* {!editPost && (
           <>
             <button
               className='group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 p-0.5 text-sm font-medium text-gray-900 hover:text-white focus:outline-none focus:ring-4 focus:ring-blue-300 group-hover:from-purple-600 group-hover:to-blue-500 dark:text-white dark:focus:ring-blue-800'
@@ -162,9 +174,9 @@ const CreatePost = () => {
               </span>
             </button>
           </>
-        )}
+        )} */}
 
-        {editPost && (
+        {/* {editPost && (
           <>
             <button
               type='submit'
@@ -183,7 +195,7 @@ const CreatePost = () => {
               </span>
             </button>
           </>
-        )}
+        )} */}
       </div>
     </form>
   )
