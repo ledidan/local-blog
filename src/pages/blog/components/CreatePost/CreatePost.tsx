@@ -4,8 +4,7 @@ import { useSelector } from 'react-redux'
 import { RootState, useAppDispatch } from 'store'
 import { Post } from 'types/blog.type'
 
-const initialState: Post = {
-  id: '',
+const initialState: Omit<Post, 'id'> = {
   title: '',
   description: '',
   publishDate: '',
@@ -18,50 +17,50 @@ interface ErrorForm {
 }
 
 const CreatePost = () => {
-  const [formData, setFormData] = useState<Post>(initialState)
-  const [errorForm, setErrorForm] = useState<null | ErrorForm>(null)
-  const editPost = useSelector((state: RootState) => state.blog.editPost)
-  const dispatch = useAppDispatch()
-  useEffect(() => {
-    setFormData(editPost || initialState)
-  }, [editPost])
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (editPost) {
-      dispatch(
-        updatePost({
-          postId: editPost.id,
-          body: formData
-        })
-      )
-        .unwrap()
-        .then(() => {
-          setFormData(initialState)
-          if (errorForm) {
-            setErrorForm(null)
-          }
-        })
-        .catch((error) => {
-          setErrorForm(error.error)
-        })
-    } else {
-      try {
-        await dispatch(addPost(formData)).unwrap()
-        setFormData(initialState)
-        if (errorForm) {
-          setErrorForm(null)
-        }
-      } catch (error: any) {
-        setErrorForm(error.error)
-      }
-    }
-  }
-  const handleCancelEdit = () => {
-    dispatch(cancelEditPost())
-  }
+  const [formData, setFormData] = useState<Omit<Post, 'id'>>(initialState)
+  // const [errorForm, setErrorForm] = useState<null | ErrorForm>(null)
+  // const editPost = useSelector((state: RootState) => state.blog.editPost)
+  // const dispatch = useAppDispatch()
+  // useEffect(() => {
+  //   setFormData(editPost || initialState)
+  // }, [editPost])
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault()
+  //   if (editPost) {
+  //     dispatch(
+  //       updatePost({
+  //         postId: editPost.id,
+  //         body: formData
+  //       })
+  //     )
+  //       .unwrap()
+  //       .then(() => {
+  //         setFormData(initialState)
+  //         if (errorForm) {
+  //           setErrorForm(null)
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         setErrorForm(error.error)
+  //       })
+  //   } else {
+  //     try {
+  //       await dispatch(addPost(formData)).unwrap()
+  //       setFormData(initialState)
+  //       if (errorForm) {
+  //         setErrorForm(null)
+  //       }
+  //     } catch (error: any) {
+  //       setErrorForm(error.error)
+  //     }
+  //   }
+  // }
+  // const handleCancelEdit = () => {
+  //   dispatch(cancelEditPost())
+  // }
 
   return (
-    <form onSubmit={handleSubmit} onReset={handleCancelEdit}>
+    <form>
       <div className='mb-6'>
         <label
           htmlFor='title'

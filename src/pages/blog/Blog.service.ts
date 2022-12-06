@@ -10,8 +10,17 @@ export const blogApi = createApi({
     // Generic arrange type response and argument
     getPosts: build.query<Post[], void>({
       query: () => 'posts' //method doesn't have argument
+    }),
+    addPosts: build.mutation<Post[], Omit<Post, 'id'>>({
+      query(body) {
+        return {
+          url: 'posts',
+          method: 'POST',
+          body
+        }
+      }
     })
   })
 })
 
-export const { useGetPostsQuery } = blogApi
+export const { useGetPostsQuery, useAddPostsMutation } = blogApi
