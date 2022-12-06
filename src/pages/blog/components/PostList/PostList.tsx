@@ -1,9 +1,9 @@
-import { deletePost, getPostList, startEditPost } from 'pages/blog/Blog.slice'
+import { startEditPost } from 'pages/blog/Blog.slice'
 import { useSelector } from 'react-redux'
 import { RootState, useAppDispatch } from 'store'
 import { useEffect } from 'react'
 import SkeletonPost from '../PostSkeleton'
-import { useGetPostsQuery } from 'pages/blog/Blog.service'
+import { useDeletePostMutation, useGetPostsQuery } from 'pages/blog/Blog.service'
 import PostItems from '../PostItem'
 // fetch & catch API in useEffect()
 // If successfully fetch, dispatching action type: "blog/getPostListSuccess"
@@ -14,7 +14,8 @@ const PostList = () => {
 
   // const postList = useSelector((state: RootState) => state.blog.postList)
   // const loading = useSelector((state: RootState) => state.blog.loading)
-  // const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch()
+  const [deletePost] = useDeletePostMutation()
   // useEffect(() => {
   //   const promise = dispatch(getPostList())
   //   return () => {
@@ -31,7 +32,13 @@ const PostList = () => {
   // isLoading for first time fetch
   // isFetching for every single time fetch API
   const { data, isLoading, isFetching } = useGetPostsQuery()
+  const startEdit = (id: string) => {
+    dispatch(startEditPost(id))
+  }
 
+  const handleDeletePost = (id: string) => {
+    deletePost(id)
+  }
   return (
     <div className='bg-white py-6 sm:py-8 lg:py-12'>
       <div className='mx-auto max-w-screen-xl px-4 md:px-8'>
@@ -53,7 +60,10 @@ const PostList = () => {
               <SkeletonPost />
             </>
           )}
-          {!isFetching && data?.map((post) => <PostItems key={post.id} post={post} />)}
+          {!isFetching &&
+            data?.map((post) => (
+              <PostItems key={post.id} post={post} startEdit={startEdit} handleDeletePost={handleDeletePost} />
+            ))}
         </div>
       </div>
     </div>

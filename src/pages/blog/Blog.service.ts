@@ -39,7 +39,7 @@ export const blogApi = createApi({
         return final
       }
     }),
-    addPosts: build.mutation<Post[], Omit<Post, 'id'>>({
+    addPosts: build.mutation<Post, Omit<Post, 'id'>>({
       query(body) {
         return {
           url: 'posts',
@@ -52,8 +52,31 @@ export const blogApi = createApi({
        * In this case - getPosts will be re-called
        */
       invalidatesTags: (result, error, body) => [{ type: 'Posts', id: 'LIST' }]
+    }),
+    getPost: build.query<Post, string>({
+      query: (id) => `posts/${id}`
+    }),
+    updatePost: build.mutation<Post, { id: string; body: Post }>({
+      query(data) {
+        return {
+          url: `posts/${data.id}`,
+          method: 'PUT',
+          body: data.body
+        }
+      },
+      invalidatesTags: (result, error, data) => [{ type: 'Posts', id: data.id }]
+    }),
+    deletePost: build.mutation<{}, string>({
+      query(id) {
+        return {
+          url: `posts/${id}`,
+          method: 'DELETE'
+        }
+      },
+      invalidatesTags: (result, error, id) => [{ type: 'Posts', id }]
     })
   })
 })
 
-export const { useGetPostsQuery, useAddPostsMutation } = blogApi
+export const { useGetPostsQuery, useAddPostsMutation, useGetPostQuery, useUpdatePostMutation, useDeletePostMutation } =
+  blogApi
