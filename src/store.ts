@@ -1,3 +1,4 @@
+import { rtkQueryErrorLogger } from './middleware'
 import { blogApi } from './pages/blog/Blog.service'
 import { useDispatch } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
@@ -12,7 +13,7 @@ export const store = configureStore({
   // add api middleware to enable some function catching, invalidation, polling and rtk-query
 
   middleware(getDefaultMiddleware) {
-    return getDefaultMiddleware().concat(blogApi.middleware)
+    return getDefaultMiddleware().concat(blogApi.middleware, rtkQueryErrorLogger)
   }
 })
 // Optional, required refetchOnFocus/refetchOnReconnect

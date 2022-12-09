@@ -1,9 +1,10 @@
+import classNames from 'classnames'
 import { useAddPostsMutation, useGetPostQuery, useUpdatePostMutation } from 'pages/blog/Blog.service'
-import { cancelEditPost } from 'pages/blog/Blog.slice'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { RootState, useAppDispatch } from 'store'
+import { RootState } from 'store'
 import { Post } from 'types/blog.type'
+import { isEntityError } from 'utils/helpers'
 
 const initialState: Omit<Post, 'id'> = {
   title: '',
@@ -13,9 +14,12 @@ const initialState: Omit<Post, 'id'> = {
   published: false
 }
 
-interface ErrorForm {
-  publishDate: string
-}
+type FormError =
+  | {
+      [key in keyof typeof initialState]: string
+    }
+  | null
+
 const CreatePost = () => {
   const [formData, setFormData] = useState<Omit<Post, 'id'> | Post>(initialState)
   const [addPost, addPostResult] = useAddPostsMutation()
@@ -23,56 +27,37 @@ const CreatePost = () => {
   const { data } = useGetPostQuery(postId, { skip: !postId })
   const [updatePost, updatePostResult] = useUpdatePostMutation()
 
-  // const [errorForm, setErrorForm] = useState<null | ErrorForm>(null)
-  // const editPost = useSelector((state: RootState) => state.blog.editPost)
-  // const dispatch = useAppDispatch()
+  const errorForm: FormError = useMemo(() => {
+    const errorResult = postId ? updatePostResult.error : addPostResult.error
+
+    if (isEntityError(errorResult)) {
+      console.log('errorResult', errorResult)
+      return errorResult.data.error as FormError
+    }
+    // if ((errorResult as FetchBaseQueryError).data && (errorResult as FetchBaseQueryError).status){
+    //   return (errorResult as FetchBaseQueryError).data.error
+    // }
+    return null
+  }, [postId, updatePostResult, addPostResult])
+
   useEffect(() => {
     if (data) {
-      setFormData(data || initialState)
+      setFormData(data)
     }
   }, [data])
-  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault()
-  //   if (editPost) {
-  //     dispatch(
-  //       updatePost({
-  //         postId: editPost.id,
-  //         body: formData
-  //       })
-  //     )
-  //       .unwrap()
-  //       .then(() => {
-  //         setFormData(initialState)
-  //         if (errorForm) {
-  //           setErrorForm(null)
-  //         }
-  //       })
-  //       .catch((error) => {
-  //         setErrorForm(error.error)
-  //       })
-  //   } else {
-  //     try {
-  //       await dispatch(addPost(formData)).unwrap()
-  //       setFormData(initialState)
-  //       if (errorForm) {
-  //         setErrorForm(null)
-  //       }
-  //     } catch (error: any) {
-  //       setErrorForm(error.error)
-  //     }
-  //   }
-  // }
-  // const handleCancelEdit = () => {
-  //   dispatch(cancelEditPost())
-  // }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (postId) {
-      await updatePost({ id: postId, body: formData as Post }).unwrap()
-    } else {
-      await addPost(formData).unwrap()
+    try {
+      if (postId) {
+        await updatePost({ id: postId, body: formData as Post }).unwrap()
+      } else {
+        await addPost(formData).unwrap()
+      }
+      setFormData(initialState)
+    } catch (err) {
+      console.log(err)
     }
-    setFormData(initialState)
   }
   return (
     <form onSubmit={handleSubmit}>
@@ -125,29 +110,35 @@ const CreatePost = () => {
         </div>
       </div>
       <div className='mb-6'>
-        <label htmlFor='publishDate' className={`mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300`}>
+        <label
+          htmlFor='publishDate'
+          className={classNames(`mb-2 block text-sm font-medium dark:text-gray-300`, {
+            'text-red-700': Boolean(errorForm?.publishDate),
+            'text-gray-900': !Boolean(errorForm?.publishDate)
+          })}
+        >
           Publish Date
         </label>
         <input
           type='datetime-local'
           id='publishDate'
-          className={`block w-56 rounded-lg border focus:outline-none `}
-          // ${
-          //   errorForm?.publishDate
-          //     ? 'border-red-500 bg-red-100 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500'
-          //     : 'border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500'
-          // }`}
-          // placeholder='Title'
-          value={formData.publishDate}
-          onChange={(e) => setFormData((prev) => ({ ...prev, publishDate: e.target.value }))}
+          className={classNames('block w-56 rounded-lg border  p-2.5 text-sm  focus:outline-none ', {
+            'border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-blue-500':
+              Boolean(errorForm?.publishDate),
+            'border-gray-300 bg-gray-50 text-gray-900 focus:border-blue-500 focus:ring-blue-500': !Boolean(
+              errorForm?.publishDate
+            )
+          })}
           required
+          value={formData.publishDate}
+          onChange={(event) => setFormData((prev) => ({ ...prev, publishDate: event.target.value }))}
         />
-        {/* {errorForm?.publishDate && (
+        {errorForm?.publishDate && (
           <p className='mt-2 text-sm text-red-500'>
             <span className='font-medium'>Error !!</span>
-            {errorForm?.publishDate}
+            {errorForm.publishDate}
           </p>
-        )} */}
+        )}
       </div>
       <div className='mb-6 flex items-center'>
         <input

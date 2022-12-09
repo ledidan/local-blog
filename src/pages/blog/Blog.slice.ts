@@ -1,12 +1,12 @@
-import { current, createSlice, PayloadAction, createAsyncThunk, AsyncThunk } from '@reduxjs/toolkit'
-import { Post } from 'types/blog.type'
-import http from 'utils/_api'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+// import { Post } from 'types/blog.type'
+// import http from 'utils/_api'
 
-type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>
+// type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>
 
-type PendingAction = ReturnType<GenericAsyncThunk['pending']>
-type RejectedAction = ReturnType<GenericAsyncThunk['rejected']>
-type FulfilledAction = ReturnType<GenericAsyncThunk['fulfilled']>
+// type PendingAction = ReturnType<GenericAsyncThunk['pending']>
+// type RejectedAction = ReturnType<GenericAsyncThunk['rejected']>
+// type FulfilledAction = ReturnType<GenericAsyncThunk['fulfilled']>
 
 interface BlogState {
   // postList: Post[]
